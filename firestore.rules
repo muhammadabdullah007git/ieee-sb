@@ -1,0 +1,34 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. PUBLIC READ ACCESS
+    // Allow anyone to see content
+    match /panel/{docId} { allow read: if true; }
+    match /events/{docId} { allow read: if true; }
+    match /blogs/{docId} { allow read: if true; }
+    match /papers/{docId} { allow read: if true; }
+    match /certificates/{docId} { allow read: if true; }
+    
+    // NEW: Allow public read access to comments and reactions for guests
+    match /comments/{docId} { allow read: if true; }
+    match /reactions/{docId} { allow read: if true; }
+    // Also allow reading user profiles (needed for author avatars/names if referenced directly)
+    match /users/{docId} { allow read: if true; }
+
+    // 2. PUBLIC WRITE ACCESS
+    // Allow anyone to send contact messages
+    match /messages/{docId} {
+      allow create: if true;
+      allow read, update, delete: if request.auth != null;
+    }
+
+    // 3. AUTHENTICATED ACCESS
+    // Allow authenticated users (Admins/Members) read/write access to everything
+    // This allows them to write to comments/reactions/blogs etc.
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
